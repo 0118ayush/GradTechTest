@@ -1,9 +1,12 @@
 function createMenuData(data) {
 
+  // split pre and post "/" into elements of their array (e.g. "parent1/parent1child" => ["parent1", "parent1child"]).
   const splitData = data.map(element => element.split("/"))
 
+  // remove the parents with no existing children.
   const filteredSplitData = splitData.filter(element => element[1])
 
+  // convert array elements into object elements with relevant key-value pairs (e.g. [ 'parent1', 'parent1child' ] => { title: 'parent1', data: [ 'parent1child' ] })
   let objectsArray = filteredSplitData.map(element => {
     let secondElArr = element[1].split("c")
     if (element[0] === secondElArr[0]) {
@@ -14,23 +17,28 @@ function createMenuData(data) {
     }
   })
 
-  let output = [];
+  // create final array pushing new titles and associated data directly inside, or merging new data into existing data of matching titles within final array. 
+  // (e.g. 
+  // [{ title: 'parent1', data: ['parent1child']}] => [{ title: 'parent1', data: ['parent1child', 'parent1child2']}]
+  // OR 
+  // [{ title: 'parent1', data: ['parent1child', 'parent1child2']}] => [{ title: 'parent1', data: ['parent1child', 'parent1child2'] }, { title: 'parent2', data: ['parent2child'] }] 
+  // ) 
 
-  objectsArray.forEach((item) => {
-    var existing = output.filter((v) => {
-      return v.title == item.title;
+  let finalArray = [];
+
+  objectsArray.forEach((rawEl) => {
+    var existing = finalArray.filter((finalEl) => {
+      return finalEl.title == rawEl.title;
     });
-    if (existing.length) {
-      var existingIndex = output.indexOf(existing[0]);
-      output[existingIndex].data = output[existingIndex].data.concat(item.data);
+    if (existing.length > 0) {
+      var existingIndex = finalArray.indexOf(existing[0]);
+      finalArray[existingIndex].data = finalArray[existingIndex].data.concat(rawEl.data);
     } else {
-      if (typeof item.data == 'string')
-        item.data = [item.data];
-      output.push(item);
+      finalArray.push(rawEl);
     }
   });
 
-  return output
+  return finalArray
 }
 
 describe("menu Data Generator", () => {
